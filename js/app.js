@@ -126,36 +126,262 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
 
-  // WhatsApp form submit
-    function sendWhatsAppMessage(e) {
+
+  /* ============================================
+     GESTION DU FORMULAIRE DE CONTACT (Gmail)
+  ============================================ */
+  const contactForm = document.getElementById('contactForm');
+  
+  if (contactForm) {
+    contactForm.addEventListener('submit', function(e) {
       e.preventDefault();
+      
+      // Récupération des données du formulaire
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
       const message = document.getElementById('message').value.trim();
-      const adminNumber = '237657662216';
-      const text = encodeURIComponent(
-        `Bonjour Les Délices Sawa,%0A` +
-        `Nom: ${name}%0A` +
-        `Email: ${email}%0A` +
-        `Message: ${message}`
-      );
-      window.open(`https://wa.me/${adminNumber}?text=${text}`, '_blank');
-      return false;
-    }
-    // Popup réseaux sociaux
-    function openSocialPopup() {
-      document.getElementById('socialPopup').style.display = 'flex';
-    }
-    function closeSocialPopup() {
-      document.getElementById('socialPopup').style.display = 'none';
-    }
-    window.onclick = function(event) {
-      const popup = document.getElementById('socialPopup');
-      if (event.target === popup) closeSocialPopup();
-    }
+      
+      // Validation simple
+      if (!name || !email || !message) {
+        showNotification('Veuillez remplir tous les champs obligatoires.', 'error');
+        return;
+      }
+      
+      // Email de destination
+      const destinationEmail = 'jolinetebu@gmail.com';
+      
+      // Construction du sujet et du corps de l'email
+      const subject = encodeURIComponent(`[Contact Délices Sawa] Message de ${name}`);
+      
+      let body = `Bonjour,%0D%0A%0D%0A`;
+      body += `Vous avez reçu un nouveau message via le formulaire de contact du site Les Délices Sawa.%0D%0A%0D%0A`;
+      body += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A`;
+      body += `📋 INFORMATIONS DU CONTACT%0D%0A`;
+      body += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A%0D%0A`;
+      body += `👤 Nom : ${name}%0D%0A`;
+      body += `📧 Email : ${email}%0D%0A`;
+      
+      if (phone) {
+        body += `📱 Téléphone : ${phone}%0D%0A`;
+      }
+      
+      body += `%0D%0A━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A`;
+      body += `💬 MESSAGE%0D%0A`;
+      body += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A%0D%0A`;
+      body += encodeURIComponent(message);
+      body += `%0D%0A%0D%0A━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A`;
+      body += `%0D%0ACe message a été envoyé depuis le formulaire de contact de votre site web.%0D%0A`;
+      body += `Date : ${new Date().toLocaleString('fr-FR')}`;
+      
+      // Construction du lien mailto
+      const mailtoLink = `mailto:${destinationEmail}?subject=${subject}&body=${body}`;
+      
+      // Ouverture du client email
+      window.location.href = mailtoLink;
+      
+      // Notification de succès
+      showNotification('Votre client email va s\'ouvrir. Cliquez sur "Envoyer" pour finaliser l\'envoi.', 'success');
+      
+      // Réinitialisation du formulaire après un délai
+      setTimeout(() => {
+        contactForm.reset();
+      }, 1500);
+    });
+  }
 
+  /* ============================================
+     POPUP FACEBOOK FLOTTANT (Coin droit)
+  ============================================ */
+  const facebookFloatPopup = document.getElementById('facebookFloatPopup');
+  
+  // Afficher le popup après 5 secondes
+  setTimeout(() => {
+    if (facebookFloatPopup) {
+      facebookFloatPopup.style.display = 'block';
+    }
+  }, 5000);
+  
+  // Fermer le popup flottant
+  window.closeFacebookFloat = function() {
+    if (facebookFloatPopup) {
+      facebookFloatPopup.style.animation = 'slideOutRight 0.3s ease';
+      setTimeout(() => {
+        facebookFloatPopup.style.display = 'none';
+        // Sauvegarder dans le sessionStorage pour ne pas réafficher
+        sessionStorage.setItem('facebookPopupClosed', 'true');
+      }, 300);
+    }
+  };
+  
+  // Ne pas afficher si déjà fermé pendant la session
+  if (sessionStorage.getItem('facebookPopupClosed') === 'true') {
+    if (facebookFloatPopup) {
+      facebookFloatPopup.style.display = 'none';
+    }
+  }
 
+  /* ============================================
+     POPUP MODAL FACEBOOK
+  ============================================ */
+  const socialPopup = document.getElementById('socialPopup');
+  
+  window.openFacebookPopup = function() {
+    if (socialPopup) {
+      socialPopup.classList.add('show');
+      socialPopup.style.display = 'flex';
+      document.body.style.overflow = 'hidden'; // Empêcher le scroll
+    }
+  };
+  
+  window.closeSocialPopup = function() {
+    if (socialPopup) {
+      socialPopup.classList.remove('show');
+      setTimeout(() => {
+        socialPopup.style.display = 'none';
+        document.body.style.overflow = ''; // Restaurer le scroll
+      }, 300);
+    }
+  };
+  
+  // Fermer en cliquant à l'extérieur
+  if (socialPopup) {
+    socialPopup.addEventListener('click', function(e) {
+      if (e.target === socialPopup) {
+        closeSocialPopup();
+      }
+    });
+  }
+  
+  // Fermer avec la touche Échap
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeSocialPopup();
+      closeFacebookFloat();
+    }
+  });
+
+  /* ============================================
+     SYSTÈME DE NOTIFICATIONS
+  ============================================ */
+  function showNotification(message, type = 'info') {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+      <div class="notification-content">
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+        <span>${message}</span>
+      </div>
+    `;
+    
+    // Ajouter les styles inline
+    notification.style.cssText = `
+      position: fixed;
+      top: 100px;
+      right: 30px;
+      background: ${type === 'success' ? '#27ae60' : '#e74c3c'};
+      color: white;
+      padding: 16px 24px;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      z-index: 9999;
+      animation: slideInRight 0.3s ease;
+      max-width: 400px;
+      font-weight: 500;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Supprimer après 5 secondes
+    setTimeout(() => {
+      notification.style.animation = 'slideOutRight 0.3s ease';
+      setTimeout(() => {
+        notification.remove();
+      }, 300);
+    }, 5000);
+  }
+
+  /* ============================================
+     VALIDATION EN TEMPS RÉEL
+  ============================================ */
+  const emailInput = document.getElementById('email');
+  
+  if (emailInput) {
+    emailInput.addEventListener('blur', function() {
+      const emailValue = this.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (emailValue && !emailRegex.test(emailValue)) {
+        this.style.borderColor = '#e74c3c';
+        showNotification('Veuillez entrer une adresse email valide.', 'error');
+      } else {
+        this.style.borderColor = '#e6eef3';
+      }
+    });
+  }
+
+  /* ============================================
+     ANIMATIONS CSS SUPPLÉMENTAIRES
+  ============================================ */
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideOutRight {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .notification-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .notification-content i {
+      font-size: 1.3rem;
+    }
+  `;
+  document.head.appendChild(style);
+
+  /* ============================================
+     COMPTEUR DE CARACTÈRES POUR LE MESSAGE
+  ============================================ */
+  const messageTextarea = document.getElementById('message');
+  
+  if (messageTextarea) {
+    const maxLength = 500;
+    const counter = document.createElement('div');
+    counter.style.cssText = `
+      text-align: right;
+      color: #888;
+      font-size: 0.9rem;
+      margin-top: 4px;
+    `;
+    counter.textContent = `0 / ${maxLength} caractères`;
+    messageTextarea.parentNode.appendChild(counter);
+    
+    messageTextarea.addEventListener('input', function() {
+      const length = this.value.length;
+      counter.textContent = `${length} / ${maxLength} caractères`;
+      counter.style.color = length > maxLength ? '#e74c3c' : '#888';
+    });
+  }
 
 });
+
+console.log('%c✉️ Contact Délices Sawa - Système de contact chargé', 'color: #0aa3bd; font-size: 14px; font-weight: bold;');
+
+
 
 
