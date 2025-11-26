@@ -131,7 +131,8 @@ require_once __DIR__ . '/php/functions.php';
 
           <div class="team-card">
             <div class="team-photo">
-              <img src="assets/images/team2.webp" alt="Clarisse Ngando">
+              <img src="assets/images/team2.webpgit push -u origin main
+" alt="Clarisse Ngando">
               <div class="team-overlay">
                 <p>"L'accueil est notre signature"</p>
               </div>
